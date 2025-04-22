@@ -8,7 +8,6 @@ from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.state import State, StatesGroup
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from aiogram.types import Update
-import logging
 
 API_TOKEN = os.getenv("BOT_TOKEN")
 WEBHOOK_PATH = "/webhook"
@@ -47,45 +46,45 @@ async def telegram_webhook(request: Request):
     return {"ok": True}
 
 @dp.message_handler(commands="start")
-async def cmd_start(message: types.Message):
+async def cmd_start(message: types.Message, state: FSMContext):
     await bot.send_message(message.chat.id, "Привіт! Введи марку авто (наприклад: Toyota):")
-    await Form.brand.set()
+    await state.set_state(Form.brand.state)
 
 @dp.message_handler(state=Form.brand)
 async def form_brand(message: types.Message, state: FSMContext):
     await state.update_data(brand=message.text)
     await bot.send_message(message.chat.id, "Введи модель авто:")
-    await Form.model.set()
+    await state.set_state(Form.model.state)
 
 @dp.message_handler(state=Form.model)
 async def form_model(message: types.Message, state: FSMContext):
     await state.update_data(model=message.text)
     await bot.send_message(message.chat.id, "Введи рік випуску:")
-    await Form.year.set()
+    await state.set_state(Form.year.state)
 
 @dp.message_handler(state=Form.year)
 async def form_year(message: types.Message, state: FSMContext):
     await state.update_data(year=int(message.text))
     await bot.send_message(message.chat.id, "Введи пробіг (тис. км):")
-    await Form.mileage.set()
+    await state.set_state(Form.mileage.state)
 
 @dp.message_handler(state=Form.mileage)
 async def form_mileage(message: types.Message, state: FSMContext):
     await state.update_data(mileage=int(message.text))
     await bot.send_message(message.chat.id, "Введи обʼєм двигуна:")
-    await Form.engine.set()
+    await state.set_state(Form.engine.state)
 
 @dp.message_handler(state=Form.engine)
 async def form_engine(message: types.Message, state: FSMContext):
     await state.update_data(engine=float(message.text))
     await bot.send_message(message.chat.id, "Введи тип палива (petrol/diesel/electric/hybrid):")
-    await Form.fuel.set()
+    await state.set_state(Form.fuel.state)
 
 @dp.message_handler(state=Form.fuel)
 async def form_fuel(message: types.Message, state: FSMContext):
     await state.update_data(fuel=message.text.lower())
     await bot.send_message(message.chat.id, "Введи країну (UA, EU, USA):")
-    await Form.country.set()
+    await state.set_state(Form.country.state)
 
 @dp.message_handler(state=Form.country)
 async def form_country(message: types.Message, state: FSMContext):
@@ -114,6 +113,6 @@ async def form_country(message: types.Message, state: FSMContext):
         price = model.predict(X_input)[0]
         await bot.send_message(message.chat.id, f"Орієнтовна вартість авто: ${round(price, 2)}")
     except Exception as e:
-        await bot.send_message(message.chat.id, f"Вибач, сталася помилка: {e}")
+        await bot.send_message(message.chat.id, f"Сталась помилка: {e}")
 
     await state.finish()
