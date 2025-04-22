@@ -103,6 +103,8 @@ async def country(message: types.Message, state: FSMContext):
 
 @app.on_event("startup")
 async def on_startup():
+    Bot.set_current(bot)
+    Dispatcher.set_current(dp)
     await bot.set_webhook(WEBHOOK_URL)
 
 @app.on_event("shutdown")
