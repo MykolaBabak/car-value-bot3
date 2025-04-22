@@ -36,7 +36,8 @@ async def startup():
 @app.on_event("shutdown")
 async def shutdown():
     await bot.delete_webhook()
-    await bot.session.close()
+    session = await bot.get_session()
+    await session.close()
 
 @app.post(WEBHOOK_PATH)
 async def telegram_webhook(request: Request):
